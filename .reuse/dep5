@@ -1,0 +1,68 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: create-envfiles
+Upstream-Contact: Benedict Harcourt <ben.harcourt@harcourtprogramming.co.uk>
+Source: https://github.com/javajawa/create-envfile
+
+Files: package.json package-lock.json .all-contributorsrc
+Copyright: n/a
+License: CC0-1.0
+
+# https://github.com/actions/toolkit/blob/master/LICENSE.md
+Files: node_modules/@actions/*
+Copyright: 2019 Github
+License: MIT
+
+# https://github.com/octokit/core.js/blob/master/LICENSE
+Files: node_modules/@octokit/*
+Copyright: 2019 Octokit contributors
+License: MIT
+
+Files: node_modules/@slack/*
+Copyright: 2019 Slack
+License: MIT
+
+# https://github.com/DefinitelyTyped/DefinitelyTyped#license
+Files: node_modules/@types/*
+Copyright: .
+License: MIT
+
+Files: node_modules/once/* node_modules/wrappy/*
+Copyright: Isaac Z. Schlueter and Contributors
+License: ISC
+
+Files: node_modules/axios/*
+Copyright: 2014-present Matt Zabriskie
+License: MIT
+
+# https://github.com/request/caseless/blob/master/LICENSE
+Files: node_modules/before-after-hook/*
+Copyright: AnishaZ and contributors
+License: Apache-2.0
+
+Files: node_modules/deprecation/*
+Copyright: Gregor Martynus and contributors
+License: ISC
+
+Files: node_modules/follow-redirects/*
+Copyright: Olivier Lalonde <olalonde@gmail.com>, James Talmage <james@talmage.io>, Ruben Verborgh
+License: MIT
+
+# https://github.com/jonschlinkert/is-plain-object/blob/master/LICENSE
+Files: node_modules/is-plain-object/*
+Copyright: 2014-2017, Jon Schlinkert
+License: MIT
+
+# https://github.com/node-fetch/node-fetch/blob/master/LICENSE.md
+Files: node_modules/node-fetch/*
+Copyright: 2016 - 2020 Node Fetch Team
+License: MIT
+
+# https://github.com/koichik/node-tunnel/blob/master/LICENSE
+Files: node_modules/tunnel/*
+Copyright: 2012 Koichi Kobayashi
+License: MIT
+
+# https://github.com/gr2m/universal-user-agent/blob/master/LICENSE.md
+Files: node_modules/universal-user-agent/*
+Copyright: 2018, Gregor Martynus (https://github.com/gr2m)
+License: ISC

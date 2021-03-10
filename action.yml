@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: 2021 Future PLC
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: "Notify slack"
+description: "Sends a notification to slack"
+
+branding:
+  icon: paperclip
+  color: gray-dark
+
+inputs:
+  slackToken:
+    description: "SlackMessage token to use"
+    required: true
+  githubToken:
+    description: "SlackMessage token to use"
+    required: true
+  action:
+    description: "Which notificaiotn type to send"
+    required: true
+
+runs:
+  using: "node12"
+  main: "src/action.js"
+
+# vim: nospell ts=2 expandtab

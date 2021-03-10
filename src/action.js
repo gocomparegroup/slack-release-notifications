@@ -1,0 +1,109 @@
+// SPDX-FileCopyrightText: 2021 Future PLC
+//
+// SPDX-License-Identifier: BSD-2-Clause
+
+const core    = require("@actions/core");
+const slack   = require("./slack");
+const github  = require("./github");
+const changeset = require("./changes");
+
+// Removes duplicate entries in an array
+Array.prototype.unique = function() {
+    return this.filter((v, i, self) => self.indexOf(v) === i);
+};
+
+class Config
+{
+    constructor(apiUrl, githubToken, slackToken, repo, ref) {
+        this.apiUrl = apiUrl;
+        this.githubToken = githubToken;
+        this.slackToken = slackToken;
+        this.repo = repo;
+        this.ref = ref;
+    }
+}
+
+async function main()
+{
+    const config = new Config(
+        process.env.GITHUB_API_URL,
+        core.getInput("githubToken"),
+        core.getInput("slackToken"),
+        process.env.GITHUB_REPOSITORY,
+        process.env.GITHUB_REF
+    );
+
+    const action = core.getInput("action");
+
+    if (action === "new-release") {
+        const prNumber = parseInt(config.ref.split("/")[2]);
+        return await announceNewReleasePR(config, prNumber);
+    } else {
+        core.error("Invalid action " + action);
+    }
+}
+
+/**
+ *
+ * @param {Config} config
+ * @param {int} prNumber
+ * @return {Promise<void>}
+ */
+async function announceNewReleasePR(config, prNumber)
+{
+    const pr = await github.getPR(config, prNumber);
+    const history = await github.getCommitHistoryForPR(config, prNumber);
+
+    const changeList = await changeset.groupHistoryAsChanges(history);
+    await changeset.addTicketDetailsToChanges(changeList);
+    const changes = changeset.sortChangesBySize(changeList);
+
+    const message = prepareSlackMessage(pr, changes);
+    await message.send();
+
+    const changelog = changeset.generateChangelog(changes);
+    await github.patch(config, new URL("pulls/" + prNumber, config.apiUrl), {"body": changelog});
+}
+
+function prepareSlackMessage(config, pr, changes) {
+    const message = new slack.SlackMessage(config.slackToken, "New FEv2 Release proposed in PR #" + pr.number);
+
+    message.addBlocks(
+        new slack.TextBlock("A new *FEv2* production release has been proposed in PR #" + pr.number),
+        new slack.HeaderBlock(pr.title),
+        new slack.TextBlock(null)
+            .addButtonAccessory(prUrl(config, pr.number), "View PR")
+            .addField(changes.length + " Tickets")
+            .addField(changes.map(change => change.commits.length).reduce((a, v) => a + v, 0) + " Commits"),
+        new slack.Divider(),
+        ...changes.map(change =>
+            new slack.TextBlock(
+                `<${ticketUrl(change.ticket)}}|${change.ticket}> *[${change.status}]* ${change.summary} ` +
+                change.prs.map(pr => `<${prUrl(config, pr)}|#${pr}>`).join(", ")
+            ).addButtonAccessory(ticketUrl(change.ticket), "View")
+        )
+    );
+
+    return message;
+}
+
+/**
+ *
+ * @param {string} ticket
+ * @return {string}
+ */
+function ticketUrl(ticket) {
+    return "https://myvouchercodes.atlassian.net/browse/" + ticket;
+}
+
+/**
+ * @param {Config} config
+ * @param {Number} prNumber
+ * @return {string}
+ */
+function prUrl(config, prNumber) {
+    return "https://github.com/" + config.repo + "/pull/" + prNumber;
+}
+
+
+main().catch(error => core.setFailed(error.message));

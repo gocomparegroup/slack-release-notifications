@@ -1,0 +1,25 @@
+{
+  "name": "create-env-file",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/action.js",
+  "keywords": [
+    "GitHub action"
+  ],
+  "author": "Benedict Harcourt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/javajawa/slack-message"
+  },
+  "license": "BSD-2-Clause",
+  "engines": {
+    "node": "^14.7.0"
+  },
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/github": "^4.0.0",
+    "@slack/webhook": "^6.0.0",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {}
+}
