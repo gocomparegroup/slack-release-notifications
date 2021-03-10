@@ -38,6 +38,12 @@ async function main()
     if (action === "new-release") {
         const prNumber = parseInt(config.ref.split("/")[2]);
         return await announceNewReleasePR(config, prNumber);
+    } else if (action === "deploy-start") {
+        const prNumber = parseInt(config.ref.split("/")[2]);
+        return await announceDeploymentStart(config, prNumber);
+    } else if (action === "deploy-complete") {
+        const prNumber = parseInt(config.ref.split("/")[2]);
+        return await announceDeploymentComplete(config, prNumber);
     } else {
         core.error("Invalid action " + action);
     }
@@ -85,6 +91,42 @@ function prepareSlackMessage(config, pr, changes) {
     );
 
     return message;
+}
+
+/**
+ *
+ * @param {Config} config
+ * @param {int} prNumber
+ * @return {Promise<void>}
+ */
+async function announceDeploymentStart(config, prNumber)
+{
+    const pr = await github.getPR(config, prNumber);
+    const message = new slack.SlackMessage(config.slackToken, "New FEv2 Release proposed in PR #" + pr.number);
+
+    message.addBlocks(
+        new slack.TextBlock(`*FEv2*: production deployment <${prUrl(config, prNumber)}|PR#${pr.number}> started.`)
+    );
+
+    await message.send();
+}
+
+/**
+ *
+ * @param {Config} config
+ * @param {int} prNumber
+ * @return {Promise<void>}
+ */
+async function announceDeploymentComplete(config, prNumber)
+{
+    const pr = await github.getPR(config, prNumber);
+    const message = new slack.SlackMessage(config.slackToken, "New FEv2 Release proposed in PR #" + pr.number);
+
+    message.addBlocks(
+        new slack.TextBlock(`*FEv2*: production deployment <${prUrl(config, prNumber)}|PR#${pr.number}> completed.`)
+    );
+
+    await message.send();
 }
 
 /**
