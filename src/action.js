@@ -66,10 +66,10 @@ async function announceNewReleasePR(config, prNumber)
     const pr = await github.getPR(config, prNumber);
     core.warning("github.getCommitHistoryForPR(" + prNumber +")");
     const history = await github.getCommitHistoryForPR(config, prNumber);
+    core.warning("github.groupHistoryAsChanges([" + history.length +"])");
     const changeList = await changeset.groupHistoryAsChanges(history);
 
-
-    core.warning("changeset.addTicketDetailsToChanges(" + changeList.length +")");
+    core.warning("changeset.addTicketDetailsToChanges([" + changeList.length +"])");
     await changeset.addTicketDetailsToChanges(changeList);
     core.warning("changeset.sortChangesBySize()");
     const changes = changeset.sortChangesBySize(changeList);
