@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: BSD-2-Clause
 
-const core  = require("@actions/core");
 const fetch = require("node-fetch");
 
 /**
@@ -49,7 +48,7 @@ function patch(config, url, data)
         body: JSON.stringify(data)
     });
 
-    return fetch(request).then(r => r.json()).catch(e => core.error(e));
+    return fetch(request).then(r => r.json());
 }
 
 /**

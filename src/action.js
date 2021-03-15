@@ -35,20 +35,18 @@ async function main()
 
     const action = core.getInput("action");
 
-    core.warning("Action = " + action);
+    console.log("Action = " + action);
 
     if (action === "new-release") {
         const prNumber = parseInt(config.ref.split("/")[2]);
-        core.warning("announceNewReleasePR(" + prNumber +")");
+        console.log("announceNewReleasePR(" + prNumber +")");
         return await announceNewReleasePR(config, prNumber);
     } else if (action === "deploy-start") {
-        const prNumber = parseInt(config.ref.split("/")[2]);
-        core.warning("announceDeploymentStart(" + prNumber +")");
-        return await announceDeploymentStart(config, prNumber);
+        console.log("announceDeploymentStart()");
+        return await announceDeploymentStart(config);
     } else if (action === "deploy-complete") {
-        const prNumber = parseInt(config.ref.split("/")[2]);
-        core.warning("announceDeploymentComplete(" + prNumber +")");
-        return await announceDeploymentComplete(config, prNumber);
+        console.log("announceDeploymentComplete()");
+        return await announceDeploymentComplete(config);
     } else {
         core.error("Invalid action " + action);
     }
@@ -62,23 +60,23 @@ async function main()
  */
 async function announceNewReleasePR(config, prNumber)
 {
-    core.warning("github.getPR(" + prNumber +")");
+    console.log("github.getPR(" + prNumber +")");
     const pr = await github.getPR(config, prNumber);
-    core.warning("github.getCommitHistoryForPR(" + prNumber +")");
+    console.log("github.getCommitHistoryForPR(" + prNumber +")");
     const history = await github.getCommitHistoryForPR(config, prNumber);
-    core.warning("github.groupHistoryAsChanges([" + history.length +"])");
+    console.log("github.groupHistoryAsChanges([" + history.length +"])");
     const changeList = await changeset.groupHistoryAsChanges(history);
 
-    core.warning("changeset.addTicketDetailsToChanges([" + changeList.length +"])");
+    console.log("changeset.addTicketDetailsToChanges([" + changeList.length +"])");
     await changeset.addTicketDetailsToChanges(changeList);
-    core.warning("changeset.sortChangesBySize()");
+    console.log("changeset.sortChangesBySize()");
     const changes = changeset.sortChangesBySize(changeList);
 
-    core.warning("prepareSlackMessage");
+    console.log("prepareSlackMessage");
     const message = prepareSlackMessage(config, pr, changes);
     await message.send();
 
-    core.warning("changeset.generateChangelog");
+    console.log("changeset.generateChangelog");
     const changelog = changeset.generateChangelog(changes);
     await github.patch(config, new URL("pulls/" + prNumber, config.apiUrl), {"body": changelog});
 }
@@ -108,16 +106,14 @@ function prepareSlackMessage(config, pr, changes) {
 /**
  *
  * @param {Config} config
- * @param {int} prNumber
  * @return {Promise<void>}
  */
-async function announceDeploymentStart(config, prNumber)
+async function announceDeploymentStart(config)
 {
-    const pr = await github.getPR(config, prNumber);
-    const message = new slack.SlackMessage(config.slackToken, "New FEv2 Release proposed in PR #" + pr.number);
+    const message = new slack.SlackMessage(config.slackToken, "*FEv2*: production deployment started.");
 
     message.addBlocks(
-        new slack.TextBlock(`*FEv2*: production deployment <${prUrl(config, prNumber)}|PR#${pr.number}> started.`)
+        new slack.TextBlock("*FEv2*: production deployment started.")
     );
 
     await message.send();
@@ -126,16 +122,14 @@ async function announceDeploymentStart(config, prNumber)
 /**
  *
  * @param {Config} config
- * @param {int} prNumber
  * @return {Promise<void>}
  */
-async function announceDeploymentComplete(config, prNumber)
+async function announceDeploymentComplete(config)
 {
-    const pr = await github.getPR(config, prNumber);
-    const message = new slack.SlackMessage(config.slackToken, "New FEv2 Release proposed in PR #" + pr.number);
+    const message = new slack.SlackMessage(config.slackToken, "*FEv2*: production deployment completed.");
 
     message.addBlocks(
-        new slack.TextBlock(`*FEv2*: production deployment <${prUrl(config, prNumber)}|PR#${pr.number}> completed.`)
+        new slack.TextBlock("*FEv2*: production deployment completed.")
     );
 
     await message.send();
