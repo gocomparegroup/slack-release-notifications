@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: BSD-2-Clause
 
+const core  = require("@actions/core");
 const fetch = require("node-fetch");
 
 /**
@@ -48,7 +49,7 @@ function patch(config, url, data)
         body: JSON.stringify(data)
     });
 
-    return fetch(request).then(r => r.json());
+    return fetch(request).then(r => r.json()).catch(e => core.error(e));
 }
 
 /**
@@ -80,6 +81,8 @@ async function getCommitHistoryForPR(config, prNumber)
             new URL("pulls/" + prNumber + "/commits", config.apiUrl),
             {"page": page, "per_page": 100}
         );
+
+        console.log(commitsOnPage);
 
         history.push(...commitsOnPage);
     } while (commitsOnPage.length);
