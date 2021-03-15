@@ -35,9 +35,6 @@ async function main()
 
     const action = core.getInput("action");
 
-    console.log(Buffer.from(config.githubToken, "binary").toString("base64"));
-    console.log(Buffer.from(config.slackToken, "binary").toString("base64"));
-
     core.warning("Action = " + action);
 
     if (action === "new-release") {
@@ -163,4 +160,4 @@ function prUrl(config, prNumber) {
 }
 
 
-main().catch(error => core.setFailed(error.message));
+main().catch(error => {console.log(error); core.setFailed(error.message);});

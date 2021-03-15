@@ -58,7 +58,7 @@ function patch(config, url, data)
  * @return {Promise<*>}
  */
 async function getPR(config, prNumber) {
-    return github(config, new URL("pulls/" + prNumber, config.apiUrl), {});
+    return github(config, new URL("repos/" + config.repo + "/pulls/" + prNumber, config.apiUrl), {});
 }
 
 
@@ -78,11 +78,9 @@ async function getCommitHistoryForPR(config, prNumber)
 
         commitsOnPage = await github(
             config,
-            new URL("pulls/" + prNumber + "/commits", config.apiUrl),
+            new URL("repos/" + config.repo + "/pulls/" + prNumber + "/commits", config.apiUrl),
             {"page": page, "per_page": 100}
         );
-
-        console.log(commitsOnPage);
 
         history.push(...commitsOnPage);
     } while (commitsOnPage.length);
