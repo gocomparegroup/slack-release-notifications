@@ -35,14 +35,19 @@ async function main()
 
     const action = core.getInput("action");
 
+    core.warning("Action = " + action);
+
     if (action === "new-release") {
         const prNumber = parseInt(config.ref.split("/")[2]);
+        core.warning("announceNewReleasePR(" + prNumber +")");
         return await announceNewReleasePR(config, prNumber);
     } else if (action === "deploy-start") {
         const prNumber = parseInt(config.ref.split("/")[2]);
+        core.warning("announceDeploymentStart(" + prNumber +")");
         return await announceDeploymentStart(config, prNumber);
     } else if (action === "deploy-complete") {
         const prNumber = parseInt(config.ref.split("/")[2]);
+        core.warning("announceDeploymentComplete(" + prNumber +")");
         return await announceDeploymentComplete(config, prNumber);
     } else {
         core.error("Invalid action " + action);
@@ -57,16 +62,23 @@ async function main()
  */
 async function announceNewReleasePR(config, prNumber)
 {
+    core.warning("github.getPR(" + prNumber +")");
     const pr = await github.getPR(config, prNumber);
+    core.warning("github.getCommitHistoryForPR(" + prNumber +")");
     const history = await github.getCommitHistoryForPR(config, prNumber);
-
     const changeList = await changeset.groupHistoryAsChanges(history);
+
+
+    core.warning("changeset.addTicketDetailsToChanges(" + changeList.length +")");
     await changeset.addTicketDetailsToChanges(changeList);
+    core.warning("changeset.sortChangesBySize()");
     const changes = changeset.sortChangesBySize(changeList);
 
-    const message = prepareSlackMessage(pr, changes);
+    core.warning("prepareSlackMessage");
+    const message = prepareSlackMessage(config, pr, changes);
     await message.send();
 
+    core.warning("changeset.generateChangelog");
     const changelog = changeset.generateChangelog(changes);
     await github.patch(config, new URL("pulls/" + prNumber, config.apiUrl), {"body": changelog});
 }
