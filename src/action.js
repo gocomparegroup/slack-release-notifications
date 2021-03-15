@@ -35,6 +35,8 @@ async function main()
 
     const action = core.getInput("action");
 
+    console.log(config);
+
     core.warning("Action = " + action);
 
     if (action === "new-release") {
