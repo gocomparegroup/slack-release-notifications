@@ -19,6 +19,10 @@ inputs:
   action:
     description: "Which notificaiotn type to send"
     required: true
+  name:
+    description: "The thing that is getting deployed"
+    required: false
+    default: 'FEv2'
 
 runs:
   using: "node12"
