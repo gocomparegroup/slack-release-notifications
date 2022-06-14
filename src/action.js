@@ -14,7 +14,8 @@ Array.prototype.unique = function() {
 
 class Config
 {
-    constructor(apiUrl, githubToken, slackToken, repo, ref) {
+    constructor(deployee, apiUrl, githubToken, slackToken, repo, ref) {
+        this.deployee = deployee;
         this.apiUrl = apiUrl;
         this.githubToken = githubToken;
         this.slackToken = slackToken;
@@ -26,6 +27,7 @@ class Config
 async function main()
 {
     const config = new Config(
+        core.getInput("name"),
         process.env.GITHUB_API_URL,
         core.getInput("githubToken"),
         core.getInput("slackToken"),
@@ -82,15 +84,15 @@ async function announceNewReleasePR(config, prNumber)
 }
 
 function prepareSlackMessage(config, pr, changes) {
-    const message = new slack.SlackMessage(config.slackToken, "New FEv2 Release proposed in PR #" + pr.number);
+    const message = new slack.SlackMessage(config.slackToken, `New ${config.deployee} Release proposed in PR #${pr.number}`);
 
     message.addBlocks(
-        new slack.TextBlock("A new *FEv2* production release has been proposed in PR #" + pr.number),
+        new slack.TextBlock(`A new *${config.deployee}* production release has been proposed in PR #${pr.number}`),
         new slack.HeaderBlock(pr.title),
         new slack.TextBlock(null)
             .addButtonAccessory(prUrl(config, pr.number), "View PR")
             .addField(changes.length + " Tickets")
-            .addField(changes.map(change => change.commits.length).reduce((a, v) => a + v, 0) + " Commits"),
+            .addField(changes.map(change => change.commits).reduce((a, v) => a + v, 0) + " Commits"),
         new slack.Divider(),
         ...changes.map(change =>
             new slack.TextBlock(
@@ -110,10 +112,10 @@ function prepareSlackMessage(config, pr, changes) {
  */
 async function announceDeploymentStart(config)
 {
-    const message = new slack.SlackMessage(config.slackToken, "*FEv2*: production deployment started.");
+    const message = new slack.SlackMessage(config.slackToken, `*${config.deployee}*: production deployment started.`);
 
     message.addBlocks(
-        new slack.TextBlock("*FEv2*: production deployment started.")
+        new slack.TextBlock(`*${config.deployee}*: production deployment started.`)
     );
 
     await message.send();
@@ -126,10 +128,10 @@ async function announceDeploymentStart(config)
  */
 async function announceDeploymentComplete(config)
 {
-    const message = new slack.SlackMessage(config.slackToken, "*FEv2*: production deployment completed.");
+    const message = new slack.SlackMessage(config.slackToken, `*${config.deployee}*: production deployment completed.`);
 
     message.addBlocks(
-        new slack.TextBlock("*FEv2*: production deployment completed.")
+        new slack.TextBlock(`*${config.deployee}*: production deployment completed.`)
     );
 
     await message.send();
