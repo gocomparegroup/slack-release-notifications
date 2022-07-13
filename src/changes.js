@@ -7,7 +7,7 @@ const fetch = require("node-fetch");
 // A ticket name is any valid project name followed by a non-zero padded
 // number, with an optional non-alphanumeric seperator.
 // The seperator will be normalised to a hyphen.
-const ticketRegexp = /(FR|MVC|REV|WL|OPS|MVO|ELO)[^0-9A-Za-z]?([1-9][0-9]*)/gim;
+const ticketRegexp = /(FR|MVC|REV|WL|OPS|MVO|ELO|SRE)[^0-9A-Za-z]?([1-9][0-9]*)/gim;
 
 class Change
 {
