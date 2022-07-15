@@ -32,7 +32,7 @@ async function addTicketDetailsToChanges(changeList)
 {
     "use strict";
 
-    const url = new URL("https://gvg.mvc-ops-eks-euw1.tgvg.io/solr/Tickets/select");
+    const url = new URL("https://tgvg.mvc-ops-eks-euw1.tgvg.io/solr/Tickets/select");
 
     url.searchParams.append("cf_allow", "kittens"); // bypass firewall
     url.searchParams.append("wt", "json"); // output in JSON
