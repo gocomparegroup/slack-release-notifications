@@ -16,8 +16,11 @@ inputs:
   githubToken:
     description: "SlackMessage token to use"
     required: true
+  jiraToken:
+    description: "The thing that is getting deployed"
+    required: true
   action:
-    description: "Which notificaiotn type to send"
+    description: "Which notification type to send"
     required: true
   name:
     description: "The thing that is getting deployed"

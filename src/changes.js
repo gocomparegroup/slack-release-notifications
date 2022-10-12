@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 
 const fetch = require("node-fetch");
+const core    = require("@actions/core");
 
 // A ticket name is any valid project name followed by a non-zero padded
 // number, with an optional non-alphanumeric seperator.
@@ -16,7 +17,6 @@ class Change
         this.ticket = ticket;
         this.summary = "";
         this.status = "";
-        this.originators = [];
         this.commits = 0;
         this.message = [];
         this.prs = [];
@@ -32,23 +32,65 @@ async function addTicketDetailsToChanges(changeList)
 {
     "use strict";
 
+    const changes = Object.entries(changeList);
+
+    await Promise.all(changes.map(async ([key, change]) => {
+        if (!key.startsWith("MVC-") || parseInt(key.substring(4), 10) > 3000) {
+            await fillTicketDataFromLegacySolr(key, change);
+            return;
+        }
+
+        fillTicketDataPurchJira(key, change);
+    }));
+}
+
+/**
+ *
+ * @param {!string} key
+ * @param {!Change} change
+ *
+ * @return {!Change}
+ */
+async function fillTicketDataFromLegacySolr(key, change) {
     const url = new URL("https://tgvg.mvc-ops-eks-euw1.tgvg.io/solr/Tickets/select");
 
-    url.searchParams.append("cf_allow", "kittens"); // bypass firewall
     url.searchParams.append("wt", "json"); // output in JSON
-    url.searchParams.append("rows", "1000"); // max 1,000 tickets
-    url.searchParams.append("fl", "key,summary,status,originator"); // get only these fields
-    url.searchParams.append("q", "key:(" + Object.keys(changeList).join(" ") + ")");
+    url.searchParams.append("rows", "1"); // max 1,000 tickets
+    url.searchParams.append("fl", "summary,status"); // get only these fields
+    url.searchParams.append("q", "key:" + key);
 
-    await fetch(url).then(r => r.json())
-        .then(r => r.response.docs)
-        .then(docs => docs.forEach(doc => {
-            const ticket = changeList[doc["key"]];
+    const response = await fetch(url);
+    const json = await response.json();
 
-            ticket.summary = doc["summary"];
-            ticket.status = doc["status"];
-            ticket.originators = doc["originator"];
-        }));
+    const doc = json.docs[0];
+
+    change.summary = doc["summary"];
+    change.status = doc["status"];
+}
+
+/**
+ *
+ * @param {!string} key
+ * @param {!Change} change
+ *
+ * @return {!Change}
+ */
+async function fillTicketDataPurchJira(key, change) {
+    const url = new URL("https://purch1.atlassian.net/rest/api/3/issue/" + key + "?fields=summary,status");
+
+    const response = await fetch(url, {
+        method: "GET",
+        headers: {"Authorization": "Basic " + core.getInput("jiraToken")},
+    });
+
+    if (response.status !== 200) {
+        return;
+    }
+
+    const data = await response.json();
+
+    change.summary = data.fields.summary;
+    change.status  = data.fields.status.name;
 }
 
 /**
