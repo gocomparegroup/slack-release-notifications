@@ -73,11 +73,17 @@ async function fillTicketDataFromLegacySolr(key, change) {
     const response = await fetch(url);
     const json = await response.json();
 
+    change.link    = "https://myvouchercodes.atlassian.net/browse/" + key;
+
     const doc = json.response.docs[0];
 
-    change.link    = "https://myvouchercodes.atlassian.net/browse/" + key;
+    if (!doc) {
+        core.error("Unable to load " + key + " from SOLR");
+        return;
+    }
+
     change.summary = doc["summary"];
-    change.status  = doc["status"];
+    change.status = doc["status"];
 }
 
 /**
