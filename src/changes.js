@@ -36,6 +36,12 @@ async function addTicketDetailsToChanges(changeList)
     const changes = Object.entries(changeList);
 
     await Promise.all(changes.map(async ([key, change]) => {
+        if (key === "other") {
+            change.summary = "Miscellaneous Changes";
+            change.status  = "Unknown";
+            return;
+        }
+
         const [project, id] = key.split("-");
 
         let oldJira = true;
