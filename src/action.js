@@ -96,9 +96,9 @@ function prepareSlackMessage(config, pr, changes) {
         new slack.Divider(),
         ...changes.map(change =>
             new slack.TextBlock(
-                `<${ticketUrl(change.ticket)}}|${change.ticket}> *[${change.status}]* ${change.summary} ` +
-                change.prs.map(pr => `<${prUrl(config, pr)}|${pr}>`).join(", ")
-            ).addButtonAccessory(ticketUrl(change.ticket), "View")
+                `<${change.link}|${change.ticket}> *[${change.status}]* ${change.summary} ` +
+                change.prs.map(pr => `<${prUrl(config, pr)}|PR #${pr}>`).join(", ")
+            ).addButtonAccessory(change.link, "JIRA")
         )
     );
 

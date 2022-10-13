@@ -8,7 +8,7 @@ const core    = require("@actions/core");
 // A ticket name is any valid project name followed by a non-zero padded
 // number, with an optional non-alphanumeric seperator.
 // The seperator will be normalised to a hyphen.
-const ticketRegexp = /(FR|MVC|REV|WL|OPS|MVO|ELO|SRE)[^0-9A-Za-z]?([1-9][0-9]*)/gim;
+const ticketRegexp = /(FR|MVC|REV|WL|OPS|MVO|ELO|SRE|HAWK)[^0-9A-Za-z]?([1-9][0-9]*)/gim;
 
 class Change
 {
@@ -17,6 +17,7 @@ class Change
         this.ticket = ticket;
         this.summary = "";
         this.status = "";
+        this.link = "https://purch1.atlassian.net/browse/" + ticket;
         this.commits = 0;
         this.message = [];
         this.prs = [];
@@ -35,12 +36,22 @@ async function addTicketDetailsToChanges(changeList)
     const changes = Object.entries(changeList);
 
     await Promise.all(changes.map(async ([key, change]) => {
-        if (!key.startsWith("MVC-") || parseInt(key.substring(4), 10) > 3000) {
-            await fillTicketDataFromLegacySolr(key, change);
-            return;
+        const [project, id] = key.split("-");
+
+        let oldJira = true;
+
+        if (["HAWK", "SRE"].includes(project)) {
+            oldJira = false;
+        }
+        if (project === "MVC" && parseInt(id, 10) < 3000) {
+            oldJira = false;
         }
 
-        fillTicketDataPurchJira(key, change);
+        if (oldJira) {
+            await fillTicketDataFromLegacySolr(key, change);
+        } else {
+            await fillTicketDataPurchJira(key, change);
+        }
     }));
 }
 
@@ -62,10 +73,11 @@ async function fillTicketDataFromLegacySolr(key, change) {
     const response = await fetch(url);
     const json = await response.json();
 
-    const doc = json.docs[0];
+    const doc = json.response.docs[0];
 
+    change.link    = "https://myvouchercodes.atlassian.net/browse/" + key;
     change.summary = doc["summary"];
-    change.status = doc["status"];
+    change.status  = doc["status"];
 }
 
 /**
@@ -89,6 +101,7 @@ async function fillTicketDataPurchJira(key, change) {
 
     const data = await response.json();
 
+    change.link    = "https://purch1.atlassian.net/browse/" + key;
     change.summary = data.fields.summary;
     change.status  = data.fields.status.name;
 }
@@ -184,7 +197,7 @@ function processCommit(changes, ticket, message, first)
     let cont  = false;
     let line;
 
-    const prMergeRegexp  = /^Merge pull request (#[1-9][0-9]*)/;
+    const prMergeRegexp  = /^Merge pull request #([1-9][0-9]*)/;
     const branchMergeRegexp  = /^Merge branch '[^' ]+' into/;
 
     if (! (ticket in changes))
@@ -218,7 +231,7 @@ function processCommit(changes, ticket, message, first)
         if (prMergeRegexp.test(line))
         {
             let pr_data = prMergeRegexp.exec(line);
-            changes[ticket].prs.push("PR " + pr_data[1]);
+            changes[ticket].prs.push(pr_data[1]);
             continue;
         }
 
@@ -291,7 +304,7 @@ function generateChangelog(changes)
             // Add the ticket reference and any PR number to the end of
             // the ender line
             change.prs.unshift(change.ticket);
-            changelog += ": [" + change.prs.join(" ") + "]\n";
+            changelog += ": [" + change.prs.map(p => "PR#" + p).join(" ") + "]\n";
 
             // Add the lines of commit messages to beneath
             changelog += "  - " + change.message.unique().join("\n  - ") + "\n\n";
