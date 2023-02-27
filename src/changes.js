@@ -42,7 +42,7 @@ async function addTicketDetailsToChanges(changeList)
             return;
         }
 
-		await fillTicketDataPurchJira(key, change);
+        await fillTicketDataPurchJira(key, change);
     }));
 }
 
@@ -130,10 +130,10 @@ function sortChangesBySize(changeMap)
     "use strict";
 
     /**
-	 * Get the list of unique tickets
-	 *
-	 * @type {Change[]}
-	 */
+     * Get the list of unique tickets
+     *
+     * @type {Change[]}
+     */
     let changes = Object.values(changeMap);
 
     // Sort the array from most comment lines to fewest.
@@ -141,8 +141,8 @@ function sortChangesBySize(changeMap)
     // comparison of the ticket key is used.
     changes.sort((a, b) =>
         (b.message.length - (b.ticket === "other") * 1000) -
-		(a.message.length - (a.ticket === "other") * 1000) ||
-		a.ticket.localeCompare(b.ticket)
+        (a.message.length - (a.ticket === "other") * 1000) ||
+        a.ticket.localeCompare(b.ticket)
     );
 
     return changes;
@@ -249,12 +249,12 @@ function generateChangelog(changes)
     "use strict";
 
     /**
-	 * @var {Change}
-	 */
+     * @var {Change}
+     */
     let change;
     /**
-	 * @var {string}
-	 */
+     * @var {string}
+     */
     let changelog = "";
 
     // Build out the changelog
