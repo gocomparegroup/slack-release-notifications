@@ -42,54 +42,8 @@ async function addTicketDetailsToChanges(changeList)
             return;
         }
 
-        const [project, id] = key.split("-");
-
-        let oldJira = true;
-
-        if (["HAWK", "SRE"].includes(project)) {
-            oldJira = false;
-        }
-        if (project === "MVC" && parseInt(id, 10) < 3000) {
-            oldJira = false;
-        }
-
-        if (oldJira) {
-            await fillTicketDataFromLegacySolr(key, change);
-        } else {
-            await fillTicketDataPurchJira(key, change);
-        }
+		await fillTicketDataPurchJira(key, change);
     }));
-}
-
-/**
- *
- * @param {!string} key
- * @param {!Change} change
- *
- * @return {!Change}
- */
-async function fillTicketDataFromLegacySolr(key, change) {
-    const url = new URL("https://tgvg.mvc-ops-eks-euw1.tgvg.io/solr/Tickets/select");
-
-    url.searchParams.append("wt", "json"); // output in JSON
-    url.searchParams.append("rows", "1"); // max 1,000 tickets
-    url.searchParams.append("fl", "summary,status"); // get only these fields
-    url.searchParams.append("q", "key:" + key);
-
-    const response = await fetch(url);
-    const json = await response.json();
-
-    change.link    = "https://myvouchercodes.atlassian.net/browse/" + key;
-
-    const doc = json.response.docs[0];
-
-    if (!doc) {
-        core.error("Unable to load " + key + " from SOLR");
-        return;
-    }
-
-    change.summary = doc["summary"];
-    change.status = doc["status"];
 }
 
 /**
