@@ -42,54 +42,8 @@ async function addTicketDetailsToChanges(changeList)
             return;
         }
 
-        const [project, id] = key.split("-");
-
-        let oldJira = true;
-
-        if (["HAWK", "SRE"].includes(project)) {
-            oldJira = false;
-        }
-        if (project === "MVC" && parseInt(id, 10) < 3000) {
-            oldJira = false;
-        }
-
-        if (oldJira) {
-            await fillTicketDataFromLegacySolr(key, change);
-        } else {
-            await fillTicketDataPurchJira(key, change);
-        }
+        await fillTicketDataPurchJira(key, change);
     }));
-}
-
-/**
- *
- * @param {!string} key
- * @param {!Change} change
- *
- * @return {!Change}
- */
-async function fillTicketDataFromLegacySolr(key, change) {
-    const url = new URL("https://tgvg.mvc-ops-eks-euw1.tgvg.io/solr/Tickets/select");
-
-    url.searchParams.append("wt", "json"); // output in JSON
-    url.searchParams.append("rows", "1"); // max 1,000 tickets
-    url.searchParams.append("fl", "summary,status"); // get only these fields
-    url.searchParams.append("q", "key:" + key);
-
-    const response = await fetch(url);
-    const json = await response.json();
-
-    change.link    = "https://myvouchercodes.atlassian.net/browse/" + key;
-
-    const doc = json.response.docs[0];
-
-    if (!doc) {
-        core.error("Unable to load " + key + " from SOLR");
-        return;
-    }
-
-    change.summary = doc["summary"];
-    change.status = doc["status"];
 }
 
 /**
@@ -176,10 +130,10 @@ function sortChangesBySize(changeMap)
     "use strict";
 
     /**
-	 * Get the list of unique tickets
-	 *
-	 * @type {Change[]}
-	 */
+     * Get the list of unique tickets
+     *
+     * @type {Change[]}
+     */
     let changes = Object.values(changeMap);
 
     // Sort the array from most comment lines to fewest.
@@ -187,8 +141,8 @@ function sortChangesBySize(changeMap)
     // comparison of the ticket key is used.
     changes.sort((a, b) =>
         (b.message.length - (b.ticket === "other") * 1000) -
-		(a.message.length - (a.ticket === "other") * 1000) ||
-		a.ticket.localeCompare(b.ticket)
+        (a.message.length - (a.ticket === "other") * 1000) ||
+        a.ticket.localeCompare(b.ticket)
     );
 
     return changes;
@@ -295,12 +249,12 @@ function generateChangelog(changes)
     "use strict";
 
     /**
-	 * @var {Change}
-	 */
+     * @var {Change}
+     */
     let change;
     /**
-	 * @var {string}
-	 */
+     * @var {string}
+     */
     let changelog = "";
 
     // Build out the changelog
