@@ -28,7 +28,7 @@ inputs:
     default: 'FEv2'
 
 runs:
-  using: "node12"
+  using: "node16"
   main: "src/action.js"
 
 # vim: nospell ts=2 expandtab

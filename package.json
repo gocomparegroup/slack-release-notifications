@@ -13,7 +13,7 @@
   },
   "license": "BSD-2-Clause",
   "engines": {
-    "node": "^14.7.0"
+    "node": "^16.17.0"
   },
   "dependencies": {
     "@actions/core": "^1.2.6",
